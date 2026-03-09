@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import { ArrowLeft, Edit3, Loader2, Save, X } from 'lucide-react';
 import { fetchBookingByDocumentId, updateBooking } from '@/api/bookings';
 import type { BookingStatus, PaymentStatus } from '@/types';
@@ -13,9 +13,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const BOOKING_TYPE_LABELS: Record<string, string> = {
-  activity: 'Activité',
-  car_rental: 'Location voiture',
-  accommodation: 'Hébergement',
+  activity: 'Activity',
+  car_rental: 'Car rental',
+  accommodation: 'Accommodation',
 };
 
 export default function BookingDetail() {
@@ -48,7 +48,7 @@ export default function BookingDetail() {
       setSaveError('');
     },
     onError: (err) => {
-      setSaveError(err instanceof Error ? err.message : 'Erreur lors de la sauvegarde');
+      setSaveError(err instanceof Error ? err.message : 'Save error');
     },
   });
 
@@ -99,10 +99,10 @@ export default function BookingDetail() {
     return (
       <div className="p-6">
         <p className="text-destructive text-sm">
-          {error instanceof Error ? error.message : 'Réservation introuvable'}
+          {error instanceof Error ? error.message : 'Booking not found'}
         </p>
         <Button variant="outline" size="sm" className="mt-3" onClick={() => navigate(-1)}>
-          Retour
+          Back
         </Button>
       </div>
     );
@@ -119,7 +119,7 @@ export default function BookingDetail() {
           className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Réservations
+          Bookings
         </Link>
         <span className="text-muted-foreground">/</span>
         <span className="text-sm font-medium text-foreground truncate max-w-xs">
@@ -130,7 +130,7 @@ export default function BookingDetail() {
       <div className="flex items-start justify-between mb-6">
         <div>
           <h1 className="text-xl font-semibold text-foreground">
-            Réservation — {BOOKING_TYPE_LABELS[booking.bookingType] ?? booking.bookingType}
+            Booking — {BOOKING_TYPE_LABELS[booking.bookingType] ?? booking.bookingType}
           </h1>
           <p className="text-xs text-muted-foreground mt-1 font-mono">{booking.documentId}</p>
         </div>
@@ -138,13 +138,13 @@ export default function BookingDetail() {
           {!editing ? (
             <Button variant="outline" size="sm" onClick={startEditing}>
               <Edit3 className="w-4 h-4 mr-1.5" />
-              Modifier
+              Edit
             </Button>
           ) : (
             <>
               <Button variant="outline" size="sm" onClick={cancelEditing} disabled={mutation.isPending}>
                 <X className="w-4 h-4 mr-1.5" />
-                Annuler
+                Cancel
               </Button>
               <Button size="sm" onClick={handleSave} disabled={mutation.isPending}>
                 {mutation.isPending ? (
@@ -152,7 +152,7 @@ export default function BookingDetail() {
                 ) : (
                   <Save className="w-4 h-4 mr-1.5" />
                 )}
-                Sauvegarder
+                Save
               </Button>
             </>
           )}
@@ -170,12 +170,12 @@ export default function BookingDetail() {
         <div className="lg:col-span-2 space-y-5">
           {/* Booking Details */}
           <div className="bg-card border border-border rounded-xl p-5">
-            <h2 className="text-sm font-semibold text-foreground mb-4">Détails de la réservation</h2>
+            <h2 className="text-sm font-semibold text-foreground mb-4">Booking details</h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Booking Status */}
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Statut réservation</Label>
+                <Label className="text-xs text-muted-foreground">Booking status</Label>
                 {editing && editData ? (
                   <Select
                     value={editData.bookingStatus}
@@ -197,7 +197,7 @@ export default function BookingDetail() {
 
               {/* Payment Status */}
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Statut paiement</Label>
+                <Label className="text-xs text-muted-foreground">Payment status</Label>
                 {editing && editData ? (
                   <Select
                     value={editData.paymentStatus}
@@ -225,7 +225,7 @@ export default function BookingDetail() {
 
               {/* Start Date */}
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Date de début</Label>
+                <Label className="text-xs text-muted-foreground">Start date</Label>
                 {editing && editData ? (
                   <Input
                     type="datetime-local"
@@ -234,14 +234,14 @@ export default function BookingDetail() {
                   />
                 ) : (
                   <p className="text-sm text-foreground">
-                    {format(new Date(booking.startDate), 'd MMMM yyyy, HH:mm', { locale: fr })}
+                    {format(new Date(booking.startDate), 'd MMMM yyyy, HH:mm', { locale: enUS })}
                   </p>
                 )}
               </div>
 
               {/* End Date */}
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Date de fin</Label>
+                <Label className="text-xs text-muted-foreground">End date</Label>
                 {editing && editData ? (
                   <Input
                     type="datetime-local"
@@ -251,7 +251,7 @@ export default function BookingDetail() {
                 ) : (
                   <p className="text-sm text-foreground">
                     {booking.endDate
-                      ? format(new Date(booking.endDate), 'd MMMM yyyy, HH:mm', { locale: fr })
+                      ? format(new Date(booking.endDate), 'd MMMM yyyy, HH:mm', { locale: enUS })
                       : '—'}
                   </p>
                 )}
@@ -274,7 +274,7 @@ export default function BookingDetail() {
 
               {/* Total Price */}
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Montant total (€)</Label>
+                <Label className="text-xs text-muted-foreground">Total amount (€)</Label>
                 {editing && editData ? (
                   <Input
                     type="number"
@@ -293,7 +293,7 @@ export default function BookingDetail() {
           {/* PayPal Info */}
           {(booking.paypalOrderId || booking.paypalCaptureId) && (
             <div className="bg-card border border-border rounded-xl p-5">
-              <h2 className="text-sm font-semibold text-foreground mb-4">Informations PayPal</h2>
+              <h2 className="text-sm font-semibold text-foreground mb-4">PayPal details</h2>
               <div className="space-y-3">
                 {booking.paypalOrderId && (
                   <div>
@@ -336,28 +336,29 @@ export default function BookingDetail() {
                 <p className="text-xs text-muted-foreground font-mono mt-2">{booking.client.documentId}</p>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">Aucun client associé</p>
+              <p className="text-sm text-muted-foreground">No client linked</p>
             )}
           </div>
 
           {/* Metadata */}
           <div className="bg-card border border-border rounded-xl p-5">
-            <h2 className="text-sm font-semibold text-foreground mb-4">Métadonnées</h2>
+            <h2 className="text-sm font-semibold text-foreground mb-4">Metadata</h2>
             <div className="space-y-2 text-sm">
               <div>
-                <p className="text-xs text-muted-foreground">Créé le</p>
+                <p className="text-xs text-muted-foreground">Created</p>
                 <p className="text-foreground">
-                  {format(new Date(booking.createdAt), 'd MMM yyyy, HH:mm', { locale: fr })}
+                  {format(new Date(booking.createdAt), 'd MMM yyyy, HH:mm', { locale: enUS })}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Mis à jour le</p>
+                <p className="text-xs text-muted-foreground">Updated</p>
                 <p className="text-foreground">
-                  {format(new Date(booking.updatedAt), 'd MMM yyyy, HH:mm', { locale: fr })}
+                  {format(new Date(booking.updatedAt), 'd MMM yyyy, HH:mm', { locale: enUS })}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Type</p>
+
                 <p className="text-foreground">{BOOKING_TYPE_LABELS[booking.bookingType] ?? booking.bookingType}</p>
               </div>
             </div>

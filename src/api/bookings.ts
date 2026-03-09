@@ -5,7 +5,6 @@ export async function fetchBookings(filters: BookingFilters = {}): Promise<Strap
   const params = new URLSearchParams();
 
   params.set('populate[client]', 'true');
-  params.set('populate[activity]', 'true');
   params.set('sort', 'createdAt:desc');
   params.set('pagination[page]', String(filters.page ?? 1));
   params.set('pagination[pageSize]', String(filters.pageSize ?? 25));
@@ -25,7 +24,7 @@ export async function fetchBookings(filters: BookingFilters = {}): Promise<Strap
 
 export async function fetchBookingByDocumentId(documentId: string): Promise<StrapiSingleResponse<Booking>> {
   return strapiGet<StrapiSingleResponse<Booking>>(
-    `/api/bookings/${documentId}?populate[client]=true&populate[activity]=true`,
+    `/api/bookings/${documentId}?populate[client]=true`,
   );
 }
 

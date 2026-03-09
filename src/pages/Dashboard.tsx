@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Calendar, CheckCircle2, Clock, Euro, TrendingUp, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import { fetchBookingStats, fetchBookings } from '@/api/bookings';
 import { BookingStatusBadge, PaymentStatusBadge } from '@/components/StatusBadges';
 
@@ -51,41 +51,41 @@ export default function Dashboard() {
     <div className="p-6 max-w-6xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-foreground">Dashboard</h1>
-        <p className="text-sm text-muted-foreground mt-1">Vue d'ensemble des réservations</p>
+        <p className="text-sm text-muted-foreground mt-1">Bookings overview</p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
         <StatCard
-          label="Total réservations"
+          label="Total bookings"
           value={stats?.total ?? 0}
           icon={TrendingUp}
           color="bg-primary/10 text-primary"
           loading={statsLoading}
         />
         <StatCard
-          label="En attente"
+          label="Pending"
           value={stats?.pending ?? 0}
           icon={Clock}
           color="bg-warning/10 text-warning"
           loading={statsLoading}
         />
         <StatCard
-          label="Confirmées"
+          label="Confirmed"
           value={stats?.confirmed ?? 0}
           icon={CheckCircle2}
           color="bg-success/10 text-success"
           loading={statsLoading}
         />
         <StatCard
-          label="Annulées"
+          label="Cancelled"
           value={stats?.cancelled ?? 0}
           icon={XCircle}
           color="bg-destructive/10 text-destructive"
           loading={statsLoading}
         />
         <StatCard
-          label="Revenus (payés)"
+          label="Revenue (paid)"
           value={stats ? `€${stats.revenue.toFixed(0)}` : '—'}
           icon={Euro}
           color="bg-emerald-500/10 text-emerald-600"
@@ -98,10 +98,10 @@ export default function Dashboard() {
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-muted-foreground" />
-            <h2 className="text-sm font-semibold text-foreground">Réservations récentes</h2>
+            <h2 className="text-sm font-semibold text-foreground">Recent bookings</h2>
           </div>
           <Link to="/bookings" className="text-xs text-primary hover:underline">
-            Voir tout →
+            View all →
           </Link>
         </div>
 
@@ -118,10 +118,10 @@ export default function Dashboard() {
                 <tr className="text-left text-xs text-muted-foreground border-b border-border">
                   <th className="px-5 py-3 font-medium">Client</th>
                   <th className="px-4 py-3 font-medium">Type</th>
-                  <th className="px-4 py-3 font-medium">Date début</th>
-                  <th className="px-4 py-3 font-medium">Statut</th>
-                  <th className="px-4 py-3 font-medium">Paiement</th>
-                  <th className="px-4 py-3 font-medium text-right">Montant</th>
+                  <th className="px-4 py-3 font-medium">Start date</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Payment</th>
+                  <th className="px-4 py-3 font-medium text-right">Amount</th>
                 </tr>
               </thead>
               <tbody>
@@ -149,7 +149,7 @@ export default function Dashboard() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
-                      {format(new Date(booking.startDate), 'd MMM yyyy', { locale: fr })}
+                      {format(new Date(booking.startDate), 'd MMM yyyy', { locale: enUS })}
                     </td>
                     <td className="px-4 py-3">
                       <BookingStatusBadge status={booking.bookingStatus} />
@@ -169,7 +169,7 @@ export default function Dashboard() {
                 {!recentData?.data.length && (
                   <tr>
                     <td colSpan={6} className="px-5 py-8 text-center text-muted-foreground text-sm">
-                      Aucune réservation
+                      No bookings
                     </td>
                   </tr>
                 )}
@@ -183,7 +183,7 @@ export default function Dashboard() {
 }
 
 const BOOKING_TYPE_LABELS: Record<string, string> = {
-  activity: 'Activité',
-  car_rental: 'Location voiture',
-  accommodation: 'Hébergement',
+  activity: 'Activity',
+  car_rental: 'Car rental',
+  accommodation: 'Accommodation',
 };

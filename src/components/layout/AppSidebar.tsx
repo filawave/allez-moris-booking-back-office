@@ -14,7 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const NAV_ITEMS = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { path: '/bookings', icon: Calendar, label: 'Réservations' },
+  { path: '/bookings', icon: Calendar, label: 'Bookings' },
   { path: '/clients', icon: Users, label: 'Clients' },
 ];
 
@@ -130,7 +130,7 @@ export function AppSidebar() {
           <AnimatePresence>
             {!collapsed && (
               <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                Déconnexion
+                Sign out
               </motion.span>
             )}
           </AnimatePresence>

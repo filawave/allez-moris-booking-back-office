@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, X } from 'lucide-react';
 import { fetchBookings } from '@/api/bookings';
 import type { BookingFilters, BookingStatus, BookingType, PaymentStatus } from '@/types';
@@ -12,9 +12,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const BOOKING_TYPE_LABELS: Record<string, string> = {
-  activity: 'Activité',
-  car_rental: 'Location voiture',
-  accommodation: 'Hébergement',
+  activity: 'Activity',
+  car_rental: 'Car rental',
+  accommodation: 'Accommodation',
 };
 
 const PAGE_SIZE = 25;
@@ -56,21 +56,21 @@ export default function BookingList() {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-foreground">Réservations</h1>
-        <p className="text-sm text-muted-foreground mt-1">{total} réservation{total !== 1 ? 's' : ''} au total</p>
+        <h1 className="text-2xl font-semibold text-foreground">Bookings</h1>
+        <p className="text-sm text-muted-foreground mt-1">{total} booking{total !== 1 ? 's' : ''} total</p>
       </div>
 
       {/* Filters */}
       <div className="bg-card border border-border rounded-xl p-4 mb-4">
         <div className="flex items-center gap-2 mb-3">
           <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
-          <span className="text-sm font-medium text-foreground">Filtres</span>
+          <span className="text-sm font-medium text-foreground">Filters</span>
           {hasActiveFilters && (
             <button
               onClick={resetFilters}
               className="ml-auto flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              <X className="w-3 h-3" /> Réinitialiser
+              <X className="w-3 h-3" /> Reset
             </button>
           )}
         </div>
@@ -79,7 +79,7 @@ export default function BookingList() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
             <Input
-              placeholder="Rechercher un client…"
+              placeholder="Search client…"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className="pl-9"
@@ -94,14 +94,14 @@ export default function BookingList() {
             }}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Statut réservation" />
+              <SelectValue placeholder="Booking status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous les statuts</SelectItem>
-              <SelectItem value="pending">En attente</SelectItem>
-              <SelectItem value="confirmed">Confirmée</SelectItem>
-              <SelectItem value="cancelled">Annulée</SelectItem>
-              <SelectItem value="completed">Terminée</SelectItem>
+              <SelectItem value="all">All statuses</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="confirmed">Confirmed</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
             </SelectContent>
           </Select>
 
@@ -113,15 +113,15 @@ export default function BookingList() {
             }}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Statut paiement" />
+              <SelectValue placeholder="Payment status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous les paiements</SelectItem>
-              <SelectItem value="unpaid">Non payé</SelectItem>
-              <SelectItem value="paypal_processing">PayPal en cours</SelectItem>
-              <SelectItem value="paid">Payé</SelectItem>
-              <SelectItem value="refunded">Remboursé</SelectItem>
-              <SelectItem value="failed">Échec</SelectItem>
+              <SelectItem value="all">All payments</SelectItem>
+              <SelectItem value="unpaid">Unpaid</SelectItem>
+              <SelectItem value="paypal_processing">PayPal processing</SelectItem>
+              <SelectItem value="paid">Paid</SelectItem>
+              <SelectItem value="refunded">Refunded</SelectItem>
+              <SelectItem value="failed">Failed</SelectItem>
             </SelectContent>
           </Select>
 
@@ -133,13 +133,13 @@ export default function BookingList() {
             }}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Type de réservation" />
+              <SelectValue placeholder="Booking type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous les types</SelectItem>
-              <SelectItem value="activity">Activité</SelectItem>
-              <SelectItem value="car_rental">Location voiture</SelectItem>
-              <SelectItem value="accommodation">Hébergement</SelectItem>
+              <SelectItem value="all">All types</SelectItem>
+              <SelectItem value="activity">Activity</SelectItem>
+              <SelectItem value="car_rental">Car rental</SelectItem>
+              <SelectItem value="accommodation">Accommodation</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -153,13 +153,13 @@ export default function BookingList() {
               <tr className="text-left text-xs text-muted-foreground border-b border-border bg-muted/30">
                 <th className="px-5 py-3 font-medium">Client</th>
                 <th className="px-4 py-3 font-medium">Type</th>
-                <th className="px-4 py-3 font-medium">Date début</th>
-                <th className="px-4 py-3 font-medium">Date fin</th>
-                <th className="px-4 py-3 font-medium">Pers.</th>
-                <th className="px-4 py-3 font-medium">Statut</th>
-                <th className="px-4 py-3 font-medium">Paiement</th>
-                <th className="px-4 py-3 font-medium text-right">Montant</th>
-                <th className="px-4 py-3 font-medium">Créé le</th>
+                <th className="px-4 py-3 font-medium">Start date</th>
+                <th className="px-4 py-3 font-medium">End date</th>
+                <th className="px-4 py-3 font-medium">Pax</th>
+                <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">Payment</th>
+                <th className="px-4 py-3 font-medium text-right">Amount</th>
+                <th className="px-4 py-3 font-medium">Created</th>
               </tr>
             </thead>
             <tbody>
@@ -195,7 +195,7 @@ export default function BookingList() {
                           >
                             {booking.client
                               ? `${booking.client.firstName} ${booking.client.lastName}`
-                              : <span className="text-muted-foreground italic">Sans client</span>}
+                              : <span className="text-muted-foreground italic">No client</span>}
                           </Link>
                           {booking.client?.email && (
                             <p className="text-xs text-muted-foreground truncate max-w-[160px]">
@@ -207,11 +207,11 @@ export default function BookingList() {
                           {BOOKING_TYPE_LABELS[booking.bookingType] ?? booking.bookingType}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
-                          {format(new Date(booking.startDate), 'd MMM yyyy', { locale: fr })}
+                          {format(new Date(booking.startDate), 'd MMM yyyy', { locale: enUS })}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
                           {booking.endDate
-                            ? format(new Date(booking.endDate), 'd MMM yyyy', { locale: fr })
+                            ? format(new Date(booking.endDate), 'd MMM yyyy', { locale: enUS })
                             : '—'}
                         </td>
                         <td className="px-4 py-3 text-center text-muted-foreground">
@@ -231,7 +231,7 @@ export default function BookingList() {
                           €{booking.totalPrice.toFixed(2)}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground whitespace-nowrap text-xs">
-                          {format(new Date(booking.createdAt), 'd MMM yyyy', { locale: fr })}
+                          {format(new Date(booking.createdAt), 'd MMM yyyy', { locale: enUS })}
                         </td>
                       </tr>
                     ))}
@@ -239,7 +239,7 @@ export default function BookingList() {
               {!isLoading && !isFetching && !data?.data.length && (
                 <tr>
                   <td colSpan={9} className="px-5 py-10 text-center text-muted-foreground text-sm">
-                    Aucune réservation trouvée
+                    No bookings found
                   </td>
                 </tr>
               )}
@@ -251,7 +251,7 @@ export default function BookingList() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-5 py-3 border-t border-border">
             <span className="text-xs text-muted-foreground">
-              Page {page} sur {totalPages}
+              Page {page} of {totalPages}
             </span>
             <div className="flex items-center gap-2">
               <Button

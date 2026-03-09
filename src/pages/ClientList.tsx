@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { fetchClients } from '@/api/clients';
 import { Input } from '@/components/ui/input';
@@ -35,14 +35,14 @@ export default function ClientList() {
     <div className="p-6 max-w-5xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-foreground">Clients</h1>
-        <p className="text-sm text-muted-foreground mt-1">{total} client{total !== 1 ? 's' : ''} au total</p>
+        <p className="text-sm text-muted-foreground mt-1">{total} client{total !== 1 ? 's' : ''} total</p>
       </div>
 
       {/* Search */}
       <div className="relative mb-4 max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
         <Input
-          placeholder="Rechercher par nom ou email…"
+          placeholder="Search by name or email…"
           value={search}
           onChange={(e) => handleSearchChange(e.target.value)}
           className="pl-9"
@@ -54,10 +54,10 @@ export default function ClientList() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs text-muted-foreground border-b border-border bg-muted/30">
-                <th className="px-5 py-3 font-medium">Nom</th>
+                <th className="px-5 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">Email</th>
-                <th className="px-4 py-3 font-medium">Téléphone</th>
-                <th className="px-4 py-3 font-medium">Inscrit le</th>
+                <th className="px-4 py-3 font-medium">Phone</th>
+                <th className="px-4 py-3 font-medium">Registered</th>
               </tr>
             </thead>
             <tbody>
@@ -86,7 +86,7 @@ export default function ClientList() {
                       <td className="px-4 py-3 text-muted-foreground">{client.phoneNumber ?? '—'}</td>
                       <td className="px-4 py-3 text-muted-foreground text-xs">
                         {client.createdAt
-                          ? format(new Date(client.createdAt), 'd MMM yyyy', { locale: fr })
+                          ? format(new Date(client.createdAt), 'd MMM yyyy', { locale: enUS })
                           : '—'}
                       </td>
                     </tr>
@@ -95,7 +95,7 @@ export default function ClientList() {
               {!isLoading && !isFetching && !data?.data.length && (
                 <tr>
                   <td colSpan={4} className="px-5 py-10 text-center text-muted-foreground text-sm">
-                    Aucun client trouvé
+                    No clients found
                   </td>
                 </tr>
               )}
@@ -106,7 +106,7 @@ export default function ClientList() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-5 py-3 border-t border-border">
             <span className="text-xs text-muted-foreground">
-              Page {page} sur {totalPages}
+              Page {page} of {totalPages}
             </span>
             <div className="flex items-center gap-2">
               <Button

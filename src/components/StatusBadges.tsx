@@ -9,10 +9,10 @@ const BOOKING_STATUS_STYLES: Record<BookingStatus, string> = {
 };
 
 const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
-  pending: 'En attente',
-  confirmed: 'Confirmée',
-  cancelled: 'Annulée',
-  completed: 'Terminée',
+  pending: 'Pending',
+  confirmed: 'Confirmed',
+  cancelled: 'Cancelled',
+  completed: 'Completed',
 };
 
 const PAYMENT_STATUS_STYLES: Record<PaymentStatus, string> = {
@@ -24,11 +24,11 @@ const PAYMENT_STATUS_STYLES: Record<PaymentStatus, string> = {
 };
 
 const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
-  unpaid: 'Non payé',
-  paypal_processing: 'PayPal en cours',
-  paid: 'Payé',
-  refunded: 'Remboursé',
-  failed: 'Échec',
+  unpaid: 'Unpaid',
+  paypal_processing: 'PayPal processing',
+  paid: 'Paid',
+  refunded: 'Refunded',
+  failed: 'Failed',
 };
 
 export function BookingStatusBadge({ status }: { status: BookingStatus }) {

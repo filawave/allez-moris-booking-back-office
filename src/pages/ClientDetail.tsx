@@ -1,7 +1,7 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import { ArrowLeft, Loader2, Mail, Phone } from 'lucide-react';
 import { fetchClientByDocumentId } from '@/api/clients';
 import { fetchBookings } from '@/api/bookings';
@@ -9,9 +9,9 @@ import { BookingStatusBadge, PaymentStatusBadge } from '@/components/StatusBadge
 import { Button } from '@/components/ui/button';
 
 const BOOKING_TYPE_LABELS: Record<string, string> = {
-  activity: 'Activité',
-  car_rental: 'Location voiture',
-  accommodation: 'Hébergement',
+  activity: 'Activity',
+  car_rental: 'Car rental',
+  accommodation: 'Accommodation',
 };
 
 export default function ClientDetail() {
@@ -45,9 +45,9 @@ export default function ClientDetail() {
   if (error || !clientData) {
     return (
       <div className="p-6">
-        <p className="text-destructive text-sm">Client introuvable</p>
+        <p className="text-destructive text-sm">Client not found</p>
         <Button variant="outline" size="sm" className="mt-3" onClick={() => navigate(-1)}>
-          Retour
+          Back
         </Button>
       </div>
     );
@@ -65,6 +65,7 @@ export default function ClientDetail() {
         >
           <ArrowLeft className="w-4 h-4" />
           Clients
+
         </Link>
         <span className="text-muted-foreground">/</span>
         <span className="text-sm font-medium text-foreground">
@@ -101,8 +102,8 @@ export default function ClientDetail() {
 
             {client.createdAt && (
               <p className="text-xs text-muted-foreground mt-4">
-                Client depuis le{' '}
-                {format(new Date(client.createdAt), 'd MMMM yyyy', { locale: fr })}
+                Client since{' '}
+                {format(new Date(client.createdAt), 'd MMMM yyyy', { locale: enUS })}
               </p>
             )}
           </div>
@@ -112,7 +113,7 @@ export default function ClientDetail() {
         <div className="lg:col-span-2">
           <div className="bg-card border border-border rounded-xl overflow-hidden">
             <div className="px-5 py-4 border-b border-border">
-              <h2 className="text-sm font-semibold text-foreground">Réservations</h2>
+              <h2 className="text-sm font-semibold text-foreground">Bookings</h2>
             </div>
 
             {bookingsLoading ? (
@@ -128,8 +129,8 @@ export default function ClientDetail() {
                     <tr className="text-left text-xs text-muted-foreground border-b border-border bg-muted/30">
                       <th className="px-5 py-3 font-medium">Type</th>
                       <th className="px-4 py-3 font-medium">Date</th>
-                      <th className="px-4 py-3 font-medium">Statut</th>
-                      <th className="px-4 py-3 font-medium">Paiement</th>
+                      <th className="px-4 py-3 font-medium">Status</th>
+                      <th className="px-4 py-3 font-medium">Payment</th>
                       <th className="px-4 py-3 font-medium text-right">Montant</th>
                     </tr>
                   </thead>
@@ -148,7 +149,7 @@ export default function ClientDetail() {
                           </Link>
                         </td>
                         <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
-                          {format(new Date(booking.startDate), 'd MMM yyyy', { locale: fr })}
+                          {format(new Date(booking.startDate), 'd MMM yyyy', { locale: enUS })}
                         </td>
                         <td className="px-4 py-3">
                           <BookingStatusBadge status={booking.bookingStatus} />
@@ -168,7 +169,7 @@ export default function ClientDetail() {
                     {!bookingsLoading && !bookingsData?.data.length && (
                       <tr>
                         <td colSpan={5} className="px-5 py-8 text-center text-muted-foreground text-sm">
-                          Aucune réservation
+                          No bookings
                         </td>
                       </tr>
                     )}

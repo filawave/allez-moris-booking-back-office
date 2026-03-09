@@ -26,7 +26,7 @@ export default function Login() {
       login(jwt, strapiUser);
       navigate('/dashboard', { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur de connexion');
+      setError(err instanceof Error ? err.message : 'Login error');
     } finally {
       setLoading(false);
     }
@@ -41,7 +41,7 @@ export default function Login() {
             <span className="text-xl font-bold text-primary-foreground">AM</span>
           </div>
           <h1 className="text-2xl font-semibold text-foreground">Allez Moris</h1>
-          <p className="text-sm text-muted-foreground mt-1">Back Office — Réservations</p>
+          <p className="text-sm text-muted-foreground mt-1">Back Office — Bookings</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -60,7 +60,7 @@ export default function Login() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Mot de passe</Label>
+            <Label htmlFor="password">Password</Label>
             <Input
               id="password"
               type="password"
@@ -80,12 +80,12 @@ export default function Login() {
 
           <Button type="submit" className="w-full" disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Se connecter
+            Sign in
           </Button>
         </form>
 
         <p className="text-center text-xs text-muted-foreground mt-6">
-          Utilisez vos identifiants Strapi (Users & Permissions)
+          Use your Strapi credentials (Users & Permissions)
         </p>
       </div>
     </div>
