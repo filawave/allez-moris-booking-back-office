@@ -1,5 +1,5 @@
-import { strapiGet, strapiPut } from './strapi';
-import type { Booking, BookingFilters, BookingStatus, PaymentStatus, StrapiListResponse, StrapiSingleResponse } from '@/types';
+import { strapiGet, strapiPost, strapiPut } from './strapi';
+import type { Booking, BookingFilters, BookingStatus, BookingType, PaymentStatus, StrapiListResponse, StrapiSingleResponse } from '@/types';
 
 export async function fetchBookings(filters: BookingFilters = {}): Promise<StrapiListResponse<Booking>> {
   const params = new URLSearchParams();
@@ -40,6 +40,31 @@ export async function updateBooking(
   }>,
 ): Promise<StrapiSingleResponse<Booking>> {
   return strapiPut<StrapiSingleResponse<Booking>>(`/api/bookings/${documentId}`, data);
+}
+
+export async function fetchBookingsByDateRange(
+  start: Date,
+  end: Date,
+): Promise<StrapiListResponse<Booking>> {
+  const params = new URLSearchParams();
+  params.set('populate[client]', 'true');
+  params.set('sort', 'startDate:asc');
+  params.set('pagination[pageSize]', '200');
+  params.set('filters[startDate][$gte]', start.toISOString());
+  params.set('filters[startDate][$lte]', end.toISOString());
+  return strapiGet<StrapiListResponse<Booking>>(`/api/bookings?${params.toString()}`);
+}
+
+export async function createBooking(data: {
+  bookingType: BookingType;
+  startDate: string;
+  endDate?: string;
+  participants: number;
+  bookingStatus: BookingStatus;
+  paymentStatus?: PaymentStatus;
+  totalPrice: number;
+}): Promise<StrapiSingleResponse<Booking>> {
+  return strapiPost<StrapiSingleResponse<Booking>>('/api/bookings', { data });
 }
 
 export async function fetchBookingStats(): Promise<{

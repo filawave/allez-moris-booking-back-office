@@ -8,6 +8,7 @@ import Login from '@/pages/Login';
 import Dashboard from '@/pages/Dashboard';
 import BookingList from '@/pages/BookingList';
 import BookingDetail from '@/pages/BookingDetail';
+import BookingCalendar from '@/pages/BookingCalendar';
 import ClientList from '@/pages/ClientList';
 import ClientDetail from '@/pages/ClientDetail';
 import NotFound from '@/pages/NotFound';
@@ -57,6 +58,16 @@ export default function App() {
                 <PrivateRoute>
                   <AppLayout>
                     <BookingDetail />
+                  </AppLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/calendar"
+              element={
+                <PrivateRoute>
+                  <AppLayout>
+                    <BookingCalendar />
                   </AppLayout>
                 </PrivateRoute>
               }

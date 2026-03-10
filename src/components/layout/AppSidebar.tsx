@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  Calendar,
+  CalendarDays,
   ChevronLeft,
   ChevronRight,
   LayoutDashboard,
   LogOut,
+  TableProperties,
   Users,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -14,7 +15,8 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const NAV_ITEMS = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { path: '/bookings', icon: Calendar, label: 'Bookings' },
+  { path: '/bookings', icon: TableProperties, label: 'Bookings' },
+  { path: '/calendar', icon: CalendarDays, label: 'Calendar' },
   { path: '/clients', icon: Users, label: 'Clients' },
 ];
 
