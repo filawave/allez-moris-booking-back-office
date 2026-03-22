@@ -1,4 +1,4 @@
-import { strapiGet, strapiPost, strapiPut } from './strapi';
+import { strapiDelete, strapiGet, strapiPost, strapiPut } from './strapi';
 import type { Booking, BookingFilters, BookingStatus, BookingType, PaymentStatus, StrapiListResponse, StrapiSingleResponse } from '@/types';
 
 export async function fetchBookings(filters: BookingFilters = {}): Promise<StrapiListResponse<Booking>> {
@@ -31,15 +31,21 @@ export async function fetchBookingByDocumentId(documentId: string): Promise<Stra
 export async function updateBooking(
   documentId: string,
   data: Partial<{
+    bookingType: BookingType;
     bookingStatus: BookingStatus;
     paymentStatus: PaymentStatus;
     startDate: string;
     endDate: string;
     participants: number;
     totalPrice: number;
+    client: string;
   }>,
 ): Promise<StrapiSingleResponse<Booking>> {
   return strapiPut<StrapiSingleResponse<Booking>>(`/api/bookings/${documentId}`, data);
+}
+
+export async function deleteBooking(documentId: string): Promise<void> {
+  return strapiDelete(`/api/bookings/${documentId}`);
 }
 
 export async function fetchBookingsByDateRange(
@@ -63,6 +69,7 @@ export async function createBooking(data: {
   bookingStatus: BookingStatus;
   paymentStatus?: PaymentStatus;
   totalPrice: number;
+  client?: string; // documentId of the client relation
 }): Promise<StrapiSingleResponse<Booking>> {
   return strapiPost<StrapiSingleResponse<Booking>>('/api/bookings', { data });
 }

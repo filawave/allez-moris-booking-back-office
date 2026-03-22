@@ -43,6 +43,17 @@ export async function strapiPut<T>(path: string, data: unknown): Promise<T> {
   return res.json();
 }
 
+export async function strapiDelete(path: string): Promise<void> {
+  const res = await fetch(`${STRAPI_URL}${path}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error?.error?.message || `HTTP ${res.status}`);
+  }
+}
+
 export async function strapiPost<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(`${STRAPI_URL}${path}`, {
     method: 'POST',

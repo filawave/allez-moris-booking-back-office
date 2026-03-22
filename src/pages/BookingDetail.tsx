@@ -3,14 +3,23 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { enUS } from 'date-fns/locale';
-import { ArrowLeft, Edit3, Loader2, Save, X } from 'lucide-react';
-import { fetchBookingByDocumentId, updateBooking } from '@/api/bookings';
-import type { BookingStatus, PaymentStatus } from '@/types';
+import { ArrowLeft, Edit3, Loader2, Save, Trash2, X } from 'lucide-react';
+import { toast } from 'sonner';
+import { fetchBookingByDocumentId, updateBooking, deleteBooking } from '@/api/bookings';
+import type { BookingStatus, BookingType, PaymentStatus } from '@/types';
 import { BookingStatusBadge, PaymentStatusBadge, BOOKING_STATUS_LABELS, PAYMENT_STATUS_LABELS } from '@/components/StatusBadges';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 const BOOKING_TYPE_LABELS: Record<string, string> = {
   activity: 'Activity',
@@ -24,6 +33,7 @@ export default function BookingDetail() {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState<{
+    bookingType: BookingType;
     bookingStatus: BookingStatus;
     paymentStatus: PaymentStatus | '';
     participants: number;
@@ -32,6 +42,7 @@ export default function BookingDetail() {
     totalPrice: number;
   } | null>(null);
   const [saveError, setSaveError] = useState('');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['booking', id],
@@ -52,9 +63,25 @@ export default function BookingDetail() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteBooking(id!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['booking-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['calendar-bookings'] });
+      toast.success('Booking deleted');
+      navigate('/bookings');
+    },
+    onError: (err) => {
+      setSaveError(err instanceof Error ? err.message : 'Delete error');
+      setShowDeleteDialog(false);
+    },
+  });
+
   function startEditing() {
     if (!booking) return;
     setEditData({
+      bookingType: booking.bookingType,
       bookingStatus: booking.bookingStatus,
       paymentStatus: booking.paymentStatus ?? '',
       participants: booking.participants,
@@ -75,6 +102,7 @@ export default function BookingDetail() {
   function handleSave() {
     if (!editData) return;
     const payload: Parameters<typeof updateBooking>[1] = {
+      bookingType: editData.bookingType,
       bookingStatus: editData.bookingStatus,
       participants: editData.participants,
       startDate: editData.startDate ? new Date(editData.startDate).toISOString() : undefined,
@@ -136,10 +164,21 @@ export default function BookingDetail() {
         </div>
         <div className="flex items-center gap-2">
           {!editing ? (
-            <Button variant="outline" size="sm" onClick={startEditing}>
-              <Edit3 className="w-4 h-4 mr-1.5" />
-              Edit
-            </Button>
+            <>
+              <Button variant="outline" size="sm" onClick={startEditing}>
+                <Edit3 className="w-4 h-4 mr-1.5" />
+                Edit
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/30"
+                onClick={() => setShowDeleteDialog(true)}
+              >
+                <Trash2 className="w-4 h-4 mr-1.5" />
+                Delete
+              </Button>
+            </>
           ) : (
             <>
               <Button variant="outline" size="sm" onClick={cancelEditing} disabled={mutation.isPending}>
@@ -173,6 +212,28 @@ export default function BookingDetail() {
             <h2 className="text-sm font-semibold text-foreground mb-4">Booking details</h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Booking Type */}
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Booking type</Label>
+                {editing && editData ? (
+                  <Select
+                    value={editData.bookingType}
+                    onValueChange={(v) => setEditData((d) => d && { ...d, bookingType: v as BookingType })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(BOOKING_TYPE_LABELS).map(([v, l]) => (
+                        <SelectItem key={v} value={v}>{l}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="text-sm text-foreground pt-1">{BOOKING_TYPE_LABELS[booking.bookingType] ?? booking.bookingType}</p>
+                )}
+              </div>
+
               {/* Booking Status */}
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Booking status</Label>
@@ -357,14 +418,48 @@ export default function BookingDetail() {
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Type</p>
-
-                <p className="text-foreground">{BOOKING_TYPE_LABELS[booking.bookingType] ?? booking.bookingType}</p>
+                <p className="text-xs text-muted-foreground">Document ID</p>
+                <p className="text-foreground font-mono text-xs">{booking.documentId}</p>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Delete booking</DialogTitle>
+            <DialogDescription className="pt-2">
+              Are you sure you want to delete this booking
+              {booking.client
+                ? ` for ${booking.client.firstName} ${booking.client.lastName}`
+                : ''}
+              ? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowDeleteDialog(false)}
+              disabled={deleteMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => deleteMutation.mutate()}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending && <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />}
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
