@@ -1,4 +1,4 @@
-import { strapiGet } from './strapi';
+import { strapiGet, strapiPost } from './strapi';
 import type { Client, StrapiListResponse, StrapiSingleResponse } from '@/types';
 
 export async function fetchClients(params: { search?: string; page?: number; pageSize?: number } = {}): Promise<StrapiListResponse<Client>> {
@@ -18,4 +18,13 @@ export async function fetchClients(params: { search?: string; page?: number; pag
 
 export async function fetchClientByDocumentId(documentId: string): Promise<StrapiSingleResponse<Client>> {
   return strapiGet<StrapiSingleResponse<Client>>(`/api/clients/${documentId}?populate[bookings]=true`);
+}
+
+export async function createClient(data: {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber?: string;
+}): Promise<StrapiSingleResponse<Client>> {
+  return strapiPost<StrapiSingleResponse<Client>>('/api/clients', { data });
 }

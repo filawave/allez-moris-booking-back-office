@@ -63,6 +63,7 @@ export async function createBooking(data: {
   bookingStatus: BookingStatus;
   paymentStatus?: PaymentStatus;
   totalPrice: number;
+  client?: string; // documentId of the client relation
 }): Promise<StrapiSingleResponse<Booking>> {
   return strapiPost<StrapiSingleResponse<Booking>>('/api/bookings', { data });
 }

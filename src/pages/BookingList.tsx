@@ -3,10 +3,11 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { enUS } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Search, SlidersHorizontal, X } from 'lucide-react';
 import { fetchBookings } from '@/api/bookings';
 import type { BookingFilters, BookingStatus, BookingType, PaymentStatus } from '@/types';
 import { BookingStatusBadge, PaymentStatusBadge } from '@/components/StatusBadges';
+import NewBookingDialog from '@/components/NewBookingDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -27,6 +28,7 @@ export default function BookingList() {
   });
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState('');
+  const [showNewBooking, setShowNewBooking] = useState(false);
 
   const queryFilters: BookingFilters = {
     ...filters,
@@ -55,9 +57,15 @@ export default function BookingList() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-foreground">Bookings</h1>
-        <p className="text-sm text-muted-foreground mt-1">{total} booking{total !== 1 ? 's' : ''} total</p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-foreground">Bookings</h1>
+          <p className="text-sm text-muted-foreground mt-1">{total} booking{total !== 1 ? 's' : ''} total</p>
+        </div>
+        <Button onClick={() => setShowNewBooking(true)}>
+          <Plus className="w-4 h-4 mr-1.5" />
+          New booking
+        </Button>
       </div>
 
       {/* Filters */}
@@ -75,7 +83,6 @@ export default function BookingList() {
           )}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {/* Search (client-side hint — Strapi doesn't support cross-relation search easily) */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
             <Input
@@ -274,6 +281,12 @@ export default function BookingList() {
           </div>
         )}
       </div>
+
+      <NewBookingDialog
+        open={showNewBooking}
+        onClose={() => setShowNewBooking(false)}
+        onCreated={() => setShowNewBooking(false)}
+      />
     </div>
   );
 }
