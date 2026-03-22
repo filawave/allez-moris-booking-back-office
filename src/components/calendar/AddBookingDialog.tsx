@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { Loader2 } from 'lucide-react';
+import { Calendar, Clock, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { createBooking } from '@/api/bookings';
 import type { BookingStatus, BookingType, PaymentStatus } from '@/types';
@@ -21,12 +21,20 @@ import {
 const DEFAULT_ADD_FORM = {
   bookingType: 'activity' as BookingType,
   startDate: '',
+  startTime: '',
   endDate: '',
+  endTime: '',
   participants: 1,
   bookingStatus: 'pending' as BookingStatus,
   paymentStatus: '' as PaymentStatus | '',
   totalPrice: 0,
 };
+
+function buildISO(date: string, time: string): string | undefined {
+  if (!date) return undefined;
+  const dt = time ? `${date}T${time}` : `${date}T00:00`;
+  return new Date(dt).toISOString();
+}
 
 export default function AddBookingDialog({
   open,
@@ -42,7 +50,8 @@ export default function AddBookingDialog({
   const queryClient = useQueryClient();
   const [form, setForm] = useState(() => ({
     ...DEFAULT_ADD_FORM,
-    startDate: format(defaultDate, "yyyy-MM-dd'T'HH:mm"),
+    startDate: format(defaultDate, 'yyyy-MM-dd'),
+    startTime: format(defaultDate, 'HH:mm'),
   }));
   const [error, setError] = useState('');
 
@@ -50,8 +59,8 @@ export default function AddBookingDialog({
     mutationFn: () =>
       createBooking({
         bookingType: form.bookingType,
-        startDate: new Date(form.startDate).toISOString(),
-        endDate: form.endDate ? new Date(form.endDate).toISOString() : undefined,
+        startDate: buildISO(form.startDate, form.startTime)!,
+        endDate: buildISO(form.endDate, form.endTime),
         participants: form.participants,
         bookingStatus: form.bookingStatus,
         paymentStatus: form.paymentStatus || undefined,
@@ -96,22 +105,54 @@ export default function AddBookingDialog({
             </Select>
           </div>
 
+          {/* Start date + time */}
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Start date & time</Label>
-            <Input
-              type="datetime-local"
-              value={form.startDate}
-              onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))}
-            />
+            <div className="grid grid-cols-2 gap-2">
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  type="date"
+                  value={form.startDate}
+                  onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))}
+                  className="pl-9"
+                />
+              </div>
+              <div className="relative">
+                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  type="time"
+                  value={form.startTime}
+                  onChange={(e) => setForm((f) => ({ ...f, startTime: e.target.value }))}
+                  className="pl-9"
+                />
+              </div>
+            </div>
           </div>
 
+          {/* End date + time */}
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">End date & time (optional)</Label>
-            <Input
-              type="datetime-local"
-              value={form.endDate}
-              onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))}
-            />
+            <div className="grid grid-cols-2 gap-2">
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  type="date"
+                  value={form.endDate}
+                  onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))}
+                  className="pl-9"
+                />
+              </div>
+              <div className="relative">
+                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  type="time"
+                  value={form.endTime}
+                  onChange={(e) => setForm((f) => ({ ...f, endTime: e.target.value }))}
+                  className="pl-9"
+                />
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

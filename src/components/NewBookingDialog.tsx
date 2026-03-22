@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Search, UserPlus, X } from 'lucide-react';
+import { Calendar, Clock, Loader2, Search, UserPlus, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { createBooking } from '@/api/bookings';
 import { fetchClients, createClient } from '@/api/clients';
-import type { BookingStatus, BookingType, PaymentStatus } from '@/types';
+import type { BookingStatus, BookingType, Client, PaymentStatus } from '@/types';
 import { BOOKING_STATUS_LABELS, PAYMENT_STATUS_LABELS } from '@/components/StatusBadges';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,7 +23,9 @@ type ClientMode = 'existing' | 'new';
 const DEFAULT_BOOKING_FORM = {
   bookingType: 'activity' as BookingType,
   startDate: '',
+  startTime: '',
   endDate: '',
+  endTime: '',
   participants: 1,
   bookingStatus: 'pending' as BookingStatus,
   paymentStatus: '' as PaymentStatus | '',
@@ -37,6 +39,12 @@ const DEFAULT_NEW_CLIENT = {
   phoneNumber: '',
 };
 
+function buildISO(date: string, time: string): string | undefined {
+  if (!date) return undefined;
+  const dt = time ? `${date}T${time}` : `${date}T00:00`;
+  return new Date(dt).toISOString();
+}
+
 export default function NewBookingDialog({
   open,
   onClose,
@@ -48,9 +56,10 @@ export default function NewBookingDialog({
 }) {
   const queryClient = useQueryClient();
   const [clientMode, setClientMode] = useState<ClientMode>('existing');
-  const [selectedClientId, setSelectedClientId] = useState('');
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [clientSearch, setClientSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [showClientList, setShowClientList] = useState(false);
   const [newClient, setNewClient] = useState(DEFAULT_NEW_CLIENT);
   const [form, setForm] = useState(DEFAULT_BOOKING_FORM);
   const [error, setError] = useState('');
@@ -66,7 +75,7 @@ export default function NewBookingDialog({
   const { data: clientsData, isLoading: clientsLoading } = useQuery({
     queryKey: ['clients', debouncedSearch, 1],
     queryFn: () => fetchClients({ search: debouncedSearch || undefined, pageSize: 50 }),
-    enabled: open && clientMode === 'existing',
+    enabled: open && clientMode === 'existing' && showClientList,
   });
 
   const clients = clientsData?.data ?? [];
@@ -84,8 +93,8 @@ export default function NewBookingDialog({
     mutationFn: (clientDocumentId?: string) =>
       createBooking({
         bookingType: form.bookingType,
-        startDate: new Date(form.startDate).toISOString(),
-        endDate: form.endDate ? new Date(form.endDate).toISOString() : undefined,
+        startDate: buildISO(form.startDate, form.startTime)!,
+        endDate: buildISO(form.endDate, form.endTime),
         participants: form.participants,
         bookingStatus: form.bookingStatus,
         paymentStatus: form.paymentStatus || undefined,
@@ -107,6 +116,18 @@ export default function NewBookingDialog({
 
   const isPending = createClientMutation.isPending || createBookingMutation.isPending;
 
+  function handleSelectClient(client: Client) {
+    setSelectedClient(client);
+    setClientSearch(`${client.firstName} ${client.lastName}`);
+    setShowClientList(false);
+  }
+
+  function handleClearClient() {
+    setSelectedClient(null);
+    setClientSearch('');
+    setShowClientList(true);
+  }
+
   async function handleSubmit() {
     setError('');
 
@@ -118,8 +139,8 @@ export default function NewBookingDialog({
     try {
       let clientDocumentId: string | undefined;
 
-      if (clientMode === 'existing' && selectedClientId) {
-        clientDocumentId = selectedClientId;
+      if (clientMode === 'existing' && selectedClient) {
+        clientDocumentId = selectedClient.documentId;
       } else if (clientMode === 'new') {
         if (!newClient.firstName.trim() || !newClient.lastName.trim() || !newClient.email.trim()) {
           setError('First name, last name and email are required for a new client');
@@ -139,8 +160,9 @@ export default function NewBookingDialog({
     setError('');
     setForm(DEFAULT_BOOKING_FORM);
     setNewClient(DEFAULT_NEW_CLIENT);
-    setSelectedClientId('');
+    setSelectedClient(null);
     setClientSearch('');
+    setShowClientList(false);
     setClientMode('existing');
     onClose();
   }
@@ -160,7 +182,7 @@ export default function NewBookingDialog({
               <div className="ml-auto flex items-center gap-1">
                 <button
                   type="button"
-                  onClick={() => setClientMode('existing')}
+                  onClick={() => { setClientMode('existing'); setShowClientList(!selectedClient); }}
                   className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
                     clientMode === 'existing'
                       ? 'bg-primary text-primary-foreground'
@@ -191,54 +213,57 @@ export default function NewBookingDialog({
                   <Input
                     placeholder="Search clients..."
                     value={clientSearch}
-                    onChange={(e) => setClientSearch(e.target.value)}
-                    className="pl-9"
+                    onChange={(e) => {
+                      setClientSearch(e.target.value);
+                      setSelectedClient(null);
+                      setShowClientList(true);
+                    }}
+                    onFocus={() => { if (!selectedClient) setShowClientList(true); }}
+                    className={`pl-9 ${selectedClient ? 'pr-8 border-primary/40 bg-primary/5' : ''}`}
                   />
-                </div>
-                <div className="border border-border rounded-lg max-h-[160px] overflow-y-auto">
-                  {clientsLoading ? (
-                    <div className="flex items-center justify-center py-4">
-                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                    </div>
-                  ) : clients.length === 0 ? (
-                    <div className="py-4 text-center text-sm text-muted-foreground">
-                      No clients found.{' '}
-                      <button
-                        type="button"
-                        onClick={() => setClientMode('new')}
-                        className="text-primary hover:underline"
-                      >
-                        Create one
-                      </button>
-                    </div>
-                  ) : (
-                    clients.map((client) => (
-                      <button
-                        key={client.documentId}
-                        type="button"
-                        onClick={() => setSelectedClientId(client.documentId)}
-                        className={`w-full text-left px-3 py-2 text-sm border-b border-border/50 last:border-0 transition-colors ${
-                          selectedClientId === client.documentId
-                            ? 'bg-primary/10 text-primary'
-                            : 'hover:bg-muted/50'
-                        }`}
-                      >
-                        <span className="font-medium">
-                          {client.firstName} {client.lastName}
-                        </span>
-                        <span className="block text-xs text-muted-foreground">{client.email}</span>
-                      </button>
-                    ))
+                  {selectedClient && (
+                    <button
+                      type="button"
+                      onClick={handleClearClient}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   )}
                 </div>
-                {selectedClientId && (
-                  <button
-                    type="button"
-                    onClick={() => setSelectedClientId('')}
-                    className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
-                  >
-                    <X className="w-3 h-3" /> Clear selection
-                  </button>
+                {showClientList && !selectedClient && (
+                  <div className="border border-border rounded-lg max-h-[160px] overflow-y-auto">
+                    {clientsLoading ? (
+                      <div className="flex items-center justify-center py-4">
+                        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                      </div>
+                    ) : clients.length === 0 ? (
+                      <div className="py-4 text-center text-sm text-muted-foreground">
+                        No clients found.{' '}
+                        <button
+                          type="button"
+                          onClick={() => setClientMode('new')}
+                          className="text-primary hover:underline"
+                        >
+                          Create one
+                        </button>
+                      </div>
+                    ) : (
+                      clients.map((client) => (
+                        <button
+                          key={client.documentId}
+                          type="button"
+                          onClick={() => handleSelectClient(client)}
+                          className="w-full text-left px-3 py-2 text-sm border-b border-border/50 last:border-0 hover:bg-muted/50 transition-colors"
+                        >
+                          <span className="font-medium">
+                            {client.firstName} {client.lastName}
+                          </span>
+                          <span className="block text-xs text-muted-foreground">{client.email}</span>
+                        </button>
+                      ))
+                    )}
+                  </div>
                 )}
               </div>
             ) : (
@@ -299,22 +324,54 @@ export default function NewBookingDialog({
             </Select>
           </div>
 
+          {/* Start date + time */}
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Start date & time *</Label>
-            <Input
-              type="datetime-local"
-              value={form.startDate}
-              onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))}
-            />
+            <div className="grid grid-cols-2 gap-2">
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  type="date"
+                  value={form.startDate}
+                  onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))}
+                  className="pl-9"
+                />
+              </div>
+              <div className="relative">
+                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  type="time"
+                  value={form.startTime}
+                  onChange={(e) => setForm((f) => ({ ...f, startTime: e.target.value }))}
+                  className="pl-9"
+                />
+              </div>
+            </div>
           </div>
 
+          {/* End date + time */}
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">End date & time (optional)</Label>
-            <Input
-              type="datetime-local"
-              value={form.endDate}
-              onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))}
-            />
+            <div className="grid grid-cols-2 gap-2">
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  type="date"
+                  value={form.endDate}
+                  onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))}
+                  className="pl-9"
+                />
+              </div>
+              <div className="relative">
+                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  type="time"
+                  value={form.endTime}
+                  onChange={(e) => setForm((f) => ({ ...f, endTime: e.target.value }))}
+                  className="pl-9"
+                />
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
