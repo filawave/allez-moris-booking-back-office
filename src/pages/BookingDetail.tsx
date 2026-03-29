@@ -401,6 +401,14 @@ export default function BookingDetail() {
             )}
           </div>
 
+          {/* Activity */}
+          {booking.activity && (
+            <div className="bg-card border border-border rounded-xl p-5">
+              <h2 className="text-sm font-semibold text-foreground mb-4">Activity</h2>
+              <p className="text-sm font-medium text-foreground">{booking.activity.title ?? '—'}</p>
+            </div>
+          )}
+
           {/* Metadata */}
           <div className="bg-card border border-border rounded-xl p-5">
             <h2 className="text-sm font-semibold text-foreground mb-4">Metadata</h2>

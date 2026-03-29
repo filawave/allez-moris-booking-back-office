@@ -16,7 +16,7 @@ export interface Client {
 export interface Activity {
   id: number;
   documentId: string;
-  name?: string;
+  title?: string;
   publicPrice?: number;
   childPrice?: number;
   isGroupPrice?: boolean;
