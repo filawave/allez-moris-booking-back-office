@@ -4,7 +4,7 @@ import type { Booking, BookingFilters, BookingStatus, BookingType, PaymentStatus
 export async function fetchBookings(filters: BookingFilters = {}): Promise<StrapiListResponse<Booking>> {
   const params = new URLSearchParams();
 
-  params.set('populate[client]', 'true');
+  params.set('populate', '*');
   params.set('sort', 'createdAt:desc');
   params.set('pagination[page]', String(filters.page ?? 1));
   params.set('pagination[pageSize]', String(filters.pageSize ?? 25));
@@ -24,7 +24,7 @@ export async function fetchBookings(filters: BookingFilters = {}): Promise<Strap
 
 export async function fetchBookingByDocumentId(documentId: string): Promise<StrapiSingleResponse<Booking>> {
   return strapiGet<StrapiSingleResponse<Booking>>(
-    `/api/bookings/${documentId}?populate[client]=true`,
+    `/api/bookings/${documentId}?populate=*`,
   );
 }
 
@@ -53,7 +53,7 @@ export async function fetchBookingsByDateRange(
   end: Date,
 ): Promise<StrapiListResponse<Booking>> {
   const params = new URLSearchParams();
-  params.set('populate[client]', 'true');
+  params.set('populate', '*');
   params.set('sort', 'startDate:asc');
   params.set('pagination[pageSize]', '200');
   params.set('filters[startDate][$gte]', start.toISOString());
